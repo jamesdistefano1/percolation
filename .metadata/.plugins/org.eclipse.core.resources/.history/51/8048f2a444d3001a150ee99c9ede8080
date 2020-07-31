@@ -1,0 +1,71 @@
+package com.percolator;
+import java.util.Random;
+
+public class PercolationSimulator {
+	private PercolationModel p;
+    int randCol;
+    int randRow;
+    int numTrials;
+    double[] results;
+
+    // perform independent trials on an n-by-n grid
+    public PercolationSimulator(int n, int trials) {
+    	Random rand = new Random();
+        numTrials = trials;
+        if (n <= 0 || trials <= 0)
+            throw new IllegalArgumentException("Both arguments must be greater than zero");
+        results = new double[trials];
+        for (int i = 0; i < trials; i++) {
+            p = new PercolationModel(n);
+            while (!p.percolates()) {
+                randRow = rand.nextInt(n);
+                randCol = rand.nextInt(n);
+                p.open(randRow, randCol); // random ints between 0 and n
+            }
+            results[i] = (double) p.numberOfOpenSites() / (n * n);
+            System.out.println(results[i]);
+            // print stats about p
+        }
+    }
+
+    // sample mean of percolation threshold
+    public double mean() {
+        double sum = 0;
+        for(int i = 0; i < results.length; i++) {
+        	sum += results[i];
+        }
+        return sum / numTrials;
+    }
+
+    // sample standard deviation of percolation threshold
+    public double stddev() {
+        return 0;
+    }
+
+    // low endpoint of 95% confidence interval
+    public double confidenceLo() {
+        return mean() - ((1.96 * stddev()) / Math.sqrt(numTrials));
+    }
+
+    // high endpoint of 95% confidence interval
+    public double confidenceHi() {
+        return mean() + ((1.96 * stddev()) / Math.sqrt(numTrials));
+    }
+
+    // test client (see below)
+    public static void main(String[] args) {
+        //int n = Integer.parseInt(args[0]);
+        //int trials = Integer.parseInt(args[1]);
+        PercolationSimulator ps = new PercolationSimulator(3, 25);
+        System.out.println("Mean                    = " + ps.mean());
+        System.out.println("Stddev                  = " + ps.stddev());
+        System.out.println(
+                "95% confidence interval = [" + ps.confidenceLo() + "," + ps.confidenceHi() + "]");
+
+    }
+
+
+}
+
+
+    

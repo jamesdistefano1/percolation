@@ -1,0 +1,103 @@
+package com.percolator;
+
+public class PercolationModel {
+	private String[][] grid;
+    private UnionFind uf;
+    private int openCount;
+    private int colSize;
+
+    public PercolationModel(int n) {
+        if (n <= 0) throw new IllegalArgumentException("N must be greater than 0");
+        grid = new String[n][n];
+        openCount = 0;
+        colSize = n;
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                grid[i][j] = "blocked";
+            }
+        }
+        uf = new UnionFind(n * n);
+    }
+
+    // opens the site (row, col) if it is not open already
+    public void open(int row, int col) {
+        if (row > colSize || col > colSize)
+            throw new IllegalArgumentException("Sqaure does not exist");
+        if (grid[row][col].equals("blocked")) {
+            grid[row][col] = "open";
+            openCount++;
+            if (row - 1 > -1 && isOpen(row - 1, col))
+                uf.union((row - 1) * colSize + col, row * colSize + col);
+            if (row + 1 < colSize && isOpen(row + 1, col))
+                uf.union((row + 1) * colSize + col, row * colSize + col);
+            if (col - 1 > -1 && isOpen(row, col - 1))
+                uf.union(row * colSize + col - 1, row * colSize + col);
+            if (col + 1 < colSize && isOpen(row, col + 1))
+                uf.union(row * colSize + col + 1, row * colSize + col);
+        }
+    }
+
+    // is the site (row, col) open?
+    public boolean isOpen(int row, int col) {
+        if (row > colSize || col > colSize)
+            throw new IllegalArgumentException("Square does not exist");
+        if (grid[row][col].equals("open")) return true;
+        else return false;
+    }
+
+    // is the site (row, col) full?
+    public boolean isFull(int row, int col) {
+        if (row > colSize || col > colSize)
+            throw new IllegalArgumentException("Square does not exist");
+        if (!isOpen(row, col)) return false;
+        else {
+            for (int i = 0; i < colSize; i++) {
+                if (uf.find(row * colSize + col) == uf.find(i)) return true;
+            }
+        }
+        return false;
+    }
+
+    // returns the number of open sites
+    public int numberOfOpenSites() {
+        return openCount;
+    }
+
+    // does the system percolate?
+    public boolean percolates() {
+        // checks is there is a full site in the bottom row
+        for (int i = 0; i < colSize; i++) {
+            if (isFull((colSize - 1), i)) return true;
+        }
+        return false;
+    }
+
+    // test client (optional)
+    public static void main(String[] args) {
+        PercolationModel p = new PercolationModel(3);
+        p.open(0, 1);
+        p.open(2, 1);
+        p.open(0, 0);
+        //p.open(2, 1);
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) System.out.println(p.grid[i][j]);
+        }
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) System.out.println(p.uf.find(i * 3 + j));
+        }
+        System.out.println(p.numberOfOpenSites());
+        if (p.percolates()) System.out.println("yeeeehawwww");
+        else System.out.println("uh oh");
+        p.open(1, 1);
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) System.out.println(p.grid[i][j]);
+        }
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) System.out.println(p.uf.find(i * 3 + j));
+        }
+        System.out.println(p.numberOfOpenSites());
+        if (p.percolates()) System.out.println("yeeeehawwww");
+        else System.out.println("uh oh");
+
+    }
+}
